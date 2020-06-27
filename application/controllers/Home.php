@@ -17,21 +17,19 @@ class Home extends MY_Controller {
 			$single_array = array();
 			$single_array['cat_id'] = $category['id'];
 			$single_array['cat_name'] = $category['category_name'];
-			$getDiseaseName = $this->Database_conn->getData('disease',array('category'=>$category['id']));
+			$getDiseaseName = $this->Database_conn->getData('disease',array('category'=>$category['id'],'status'=>1));
 			$temp_array  = array();
 			foreach ($getDiseaseName as $value) {
 				$single_disease  = array();
 				$single_disease['disease_id'] = $value['id'];
 				$single_disease['disease_name'] = $value['disease_name'];			
-				$single_disease['disease_article'] = $this->get_diseases_data($value['disease_name']);
+				$single_disease['disease_article'] = $value['html_content'];
 				array_push($temp_array, $single_disease);		
 			}
 			$single_array['single_disease'] = $temp_array;
-		// print_r($single_array['disease_name']['query']);die;
 			array_push($final_array, $single_array);
 		}
 		$data['final_data'] = $final_array;
-		// print_r($data);die;
 		$this->load->view('home',$data);
 		
 	}

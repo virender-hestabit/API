@@ -25,13 +25,13 @@
 				</div>
 
 				<div class="category_head">
-					<h4><?php echo $data['cat_name'];?></h4>
+					<h4><?php echo ucfirst($data['cat_name']);?></h4>
 					<span class="custom_border"></span>
 					<p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s</p>
 				</div>
 				<div class="slider_nav">
-					<div class="left_slider_text">Pneumonia</div>
-					<div class="right_slider_text"><a href="#">View All</a></div>
+					<!-- <div class="left_slider_text">Pneumonia</div> -->
+					<!-- <div class="right_slider_text"><a href="#">View All</a></div> -->
 				</div>
 				<div class="category_slider">
 					<?php foreach ($data['single_disease'] as $single_disease) { ?>
@@ -41,8 +41,8 @@
 								<img src="<?php echo base_url('application/assests/medicare/media/icon1.png');?>" alt="Website" />
 							</div>
 							<div class="category_box_dis">
-								<h4><?php echo $single_disease['disease_name'];?></h4>
-								<p><?php echo strtolower(Strip_tags(substr($single_disease['disease_article'],0,250))).".."; ?></p>
+								<h4><?php echo ucfirst($single_disease['disease_name']);?></h4>
+								<p style="text-align:justify;"><?php echo substr(strtolower(Strip_tags(htmlspecialchars_decode($single_disease['disease_article']))),0,275).".."; ?></p>
 							</div>
 							<div class="category_box_action">
 								<a href="<?php echo base_url('disease/detail/'.$single_disease['disease_id']); ?>">Read more<span class="category_box_action_icon"><i class="fas fa-angle-right"></i></span></a>

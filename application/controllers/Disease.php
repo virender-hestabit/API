@@ -12,10 +12,9 @@ class Disease extends MY_Controller {
 	{
 		if(!empty($disease_id) && $disease_id>0)
 		{
-			$disease_detail = $this->Database_conn->disease_con('disease.disease_name',array('disease.id'=>$disease_id));
+			$disease_detail = $this->Database_conn->disease_con('disease.disease_name',array('disease.id'=>$disease_id,'disease.status'=>1));
 			$data['disease_detail'] = $disease_detail;
-			$data['disease_article'] = $this->get_diseases_data($disease_detail[0]['disease_name']);
-			// echo "<pre>";print_r();die;
+			$data['disease_article'] = htmlspecialchars_decode($disease_detail[0]['html_content']);
 			$this->load->view('detail', $data);		
 		}
 		else
@@ -39,11 +38,6 @@ class Disease extends MY_Controller {
         foreach ($this->response['query']['pages'] as $key => $value) {
         	return $value['extract'];
         }
-    }
-
-
-    public function demo(){
-    	echo "dfasfsdf";die;
     }
 
 }
