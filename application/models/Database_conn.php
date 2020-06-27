@@ -83,12 +83,21 @@ class Database_conn  extends MY_Model {
 
 ######################################################################################################################################
 
-        public function getData($table_name , $condition =array())
+      public function getData($table_name , $condition =array(),$coloumn='status')
        {
-         
         if(isset($condition)&&sizeof($condition)>0)
         {
-          $this->db->where('status','1');
+          $this->db->where($coloumn,'1');
+          $this->db->where($condition);
+        }
+        $get_data=$this->db->get($table_name);
+        return $get_data->result_array();
+       }
+
+       public function getDataNew($table_name , $condition =array(),$coloumn='status')
+       {
+        if(isset($condition)&&sizeof($condition)>0)
+        {
           $this->db->where($condition);
         }
         $get_data=$this->db->get($table_name);
@@ -206,6 +215,17 @@ class Database_conn  extends MY_Model {
         {
           $this->db->select('disease.* ,wbs_category.category_name, users.username, users.id as user_id')->join('wbs_category','disease.category=wbs_category.id')->join('users','users.id=disease.created_by')->order_by($coloumn_name, "asc"); 
           $query = $this->db->get('disease');
+          return $query->result_array();
+        }
+        public function getGoogleAdd($coloumn_name='created_on',$condition=array())
+        {
+          if(count($condition)>0)
+          {
+            $this->db->where($condition);  
+          }
+          $this->db->order_by($coloumn_name, "desc"); 
+          $query = $this->db->get('google_adsence');
+          // echo "<pre>";var_dump($query->result_array());die;
           return $query->result_array();
         }
 

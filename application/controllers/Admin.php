@@ -108,6 +108,24 @@ class Admin extends MY_Controller {
       return $this->load->view('category',$data);
   }
 
+  public function get_diseases_data($disease_name) {
+
+      $header[] = "Content-type: application/json";
+      
+      $this->curl = curl_init();
+ 
+     // curl_setopt($this->curl, CURLOPT_URL,"https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=".$disease_name);
+     curl_setopt($this->curl, CURLOPT_URL,"https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&titles=".$disease_name);
+     
+      curl_setopt($this->curl, CURLOPT_POST, 0);
+      curl_setopt($this->curl, CURLOPT_RETURNTRANSFER, 1);
+      curl_setopt($this->curl, CURLOPT_HTTPHEADER,  $header);
+      $this->response = json_decode(curl_exec($this->curl), true);
+      foreach ($this->response['query']['pages'] as $key => $value) {
+        return $value['extract'];
+      }
+  }
+
   public function manageDisease($msg='')
   {
 
@@ -119,8 +137,8 @@ class Admin extends MY_Controller {
       $dies_status = $this->input->post('dies_status');
       if(isset($submit))
       {
-        if(!$this->Database_conn->getData('disease',array('disease_name'=>$disease_name,'category'=>$category ))){
-          $data = array('disease_name' => $disease_name , 'category'=>$category ,'status'=>$dies_status, 'created_by' => $this->session->user_id , 'created_on'=>date('y-m-d H:i:s'));
+        if(!$this->Database_conn->getData('disease',array('disease_name'=>$disease_name,'category'=>$category))) {
+          $data = array('disease_name' => $disease_name , 'category'=>$category ,'status'=>$dies_status, 'created_by' => $this->session->user_id , 'created_on'=>date('y-m-d H:i:s'),'html_content'=>htmlentities($this->get_diseases_data($disease_name)));
           $insert = $this->Database_conn->insert('disease',$data);
           $data['msg'] = 'Disease Detail Inserted Successfully';
         }
@@ -143,7 +161,7 @@ class Admin extends MY_Controller {
       {
         $disease_id = $this->input->post('disease_id');
         if(!$this->Database_conn->getData('disease',array('disease_name'=>$disease_name,'category'=>$category))){
-          $data = array('disease_name' => $disease_name ,'category'=>$category, 'created_on'=>date('y-m-d H:i:s'));
+          $data = array('disease_name' => $disease_name ,'category'=>$category, 'created_on'=>date('y-m-d H:i:s'),'html_content'=>htmlentities($this->get_diseases_data($disease_name)));
           $insert = $this->Database_conn->update('disease',$data, 'id',$disease_id);
           $data['msg'] = 'Disease Detail Updated Successfully';
         }
@@ -176,12 +194,75 @@ class Admin extends MY_Controller {
       $data['category_detail'] = $this->Database_conn->category();
       return $this->load->view('disease_detail',$data);
   }  
+  
+  public function googleAdsence()
+  {
+      if(!isset($this->session->user_id))
+        return redirect('admin/login');
+
+      $submit = $this->input->post('submit');
+      $page = $this->input->post('page');
+      $add_script = htmlentities('<script>'.$this->input->post('add_script').'</script>');
+      $publish_status = $this->input->post('publish_status');
+      $position = ($this->input->post('position')?$this->input->post('position'):'center');
+      if(isset($submit))
+      {
+          $data = array('page' => $page , 'position'=>$position ,'publish_status'=>$publish_status, 'add_script' => $add_script , 'created_on'=>date('y-m-d H:i:s'));
+          $insert = $this->Database_conn->insert('google_adsence',$data);
+          $data['msg'] = 'Google Adsence Inserted Successfully';
+      }
+      $data['dataArr'] = $this->Database_conn->getGoogleAdd();
+      return $this->load->view('google_adsence',$data);
+  }
+  public function editGoogleAdsence($id = 0 , $msg='')
+  {
+    if(!isset($this->session->user_id))
+      return redirect('admin/login');
+      $submit = $this->input->post('submit');
+      $page = $this->input->post('page');
+      $add_script = htmlentities('<script>'.$this->input->post('add_script').'</script>');
+      $publish_status = $this->input->post('publish_status');
+      $position = ($this->input->post('position')?$this->input->post('position'):'center');
+      if(isset($submit))
+      {
+          $add_id = $this->input->post('add_id');
+          $data = array('page' => $page , 'position'=>$position ,'publish_status'=>$publish_status, 'add_script' => $add_script , 'created_on'=>date('y-m-d H:i:s'));
+          $insert = $this->Database_conn->update('google_adsence',$data, 'id',$add_id);
+          $data['msg'] = 'Google Adsence Updated Successfully';
+          $add_id = (int)$add_id;
+          $data['edit_add'] = $this->Database_conn->getDataNew('google_adsence',array('id'=>$add_id),'publish_status');
+      }
+      else if($id!=0)
+      {
+        $id = (int)$id;
+        $data['edit_add'] = $this->Database_conn->getDataNew('google_adsence',array('id'=>$id),'publish_status');
+      }
+      // var_dump($data['edit_add']);die;
+      $data['dataArr'] = $this->Database_conn->getGoogleAdd();
+      return $this->load->view('google_adsence',$data);
+  }
+
+  public function deleteGoogleAdsence($id = 0 , $msg='')
+  {
+    if(!isset($this->session->user_id))
+      return redirect('admin/login');
+      if($id!=0)
+      {
+        $id = (int)$id;
+        $this->Database_conn->deleteData('google_adsence',$id);
+        $data['msg'] = 'Google Adsence Deleted Successfully';
+      }
+      $data['dataArr'] = $this->Database_conn->getGoogleAdd();
+      return $this->load->view('google_adsence',$data);
+  }
+
   public function logout()
   {
     $this->session->unset_userdata('username');
     $this->session->unset_userdata('user_id');
     return redirect('admin/login');
   }
+
 
   function encrypt($string) 
     {
@@ -225,7 +306,6 @@ class Admin extends MY_Controller {
     }
 
     public function update_dies_status(){
-
       $statusId = $this->input->post('statusId');
       $dies_id = $this->input->post('dies_id');
       $result = $this->Database_conn->update('disease',array('status'=>$statusId),'id',$dies_id);
@@ -237,4 +317,11 @@ class Admin extends MY_Controller {
       }
     }
 
+    public function update_publish_status(){
+      $publish_status = $this->input->post('publish_status');
+      $id = $this->input->post('id');
+      $table = $this->input->post('table');
+      $result = $this->Database_conn->update($table,array('publish_status'=>$publish_status),'id',$id);
+      return $result;
+    }
 }
